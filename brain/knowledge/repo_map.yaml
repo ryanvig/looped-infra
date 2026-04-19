@@ -1,0 +1,39 @@
+{
+  "backend": {
+    "config_files": [
+      "backend/app/main.py",
+      "backend/alembic.ini",
+      "backend/railway.toml",
+      "backend/requirements.txt"
+    ],
+    "migrations": [],
+    "models": [],
+    "routes": [],
+    "schemas": [],
+    "services": [],
+    "utils": []
+  },
+  "mobile": {
+    "config_files": [
+      "mobile/eas.json",
+      "mobile/app.json"
+    ],
+    "api": "mobile/src/lib/api.ts",
+    "navigation": [],
+    "contexts": [],
+    "screens": [],
+    "components": [],
+    "theme": "mobile/src/theme/tokens.ts"
+  },
+  "frontend": {
+    "config_files": [
+      "frontend/next.config.ts"
+    ],
+    "app_root": "frontend/app",
+    "pages": []
+  },
+  "design_system": {
+    "tokens": "brain/knowledge/looped_design_tokens.md",
+    "description": "Looped design system tokens for UI generation"
+  }
+}

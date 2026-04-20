@@ -159,3 +159,54 @@ Always validate:
 - Deliverables non-empty
 - Due dates in future
 - Use Enum types not raw strings for deliverable types
+### 19. Webhook idempotency
+Every webhook handler checks terminal status before mutating:
+```python
+if contract.status == ContractStatus.FULLY_EXECUTED:
+    return {"status": "ok"}
+```
+Never process a completed event twice. DocuSign (and most external
+webhooks) will retry — reprocessing on a terminal row causes duplicate
+downstream work (extra Deliverables, duplicate state events, etc.).
+
+### 20. Webhook signature validation
+Every external webhook validates its signature before parsing.
+Use HMAC-SHA256 against the raw request body bytes.
+```python
+raw_body = await request.body()
+signature = request.headers.get("X-DocuSign-Signature-1", "")
+if not validate_docusign_signature(raw_body, signature):
+    raise HTTPException(status_code=401, detail="Invalid webhook signature")
+```
+Never ship a `TODO` for signature validation. Reject with 401 on mismatch.
+
+### 21. Enum values from JSON
+When constructing a model row from a JSON dict where an enum field was
+stored as `enum.value` (lowercase string), convert back through the enum:
+```python
+# CORRECT
+type=DeliverableType(d.get("type"))
+
+# WRONG — fails on PG enum columns
+type=d.get("type")
+```
+PostgreSQL stores the enum NAME (uppercase), and SQLAlchemy needs the
+enum instance to do the lookup.
+
+### 22. Routes calling services with external I/O
+If a route calls a service that makes an external API call
+(DocuSign, Stripe, etc.) AND writes to DB, the route must commit
+AFTER the service returns, not before.
+The external call and the DB write must be in the same transaction
+boundary — otherwise a failed external call leaves the DB in a
+partially-committed, inconsistent state.
+```python
+transition(...)                   # flushes
+contract = generate_contract(...) # external call + DB writes (flushes)
+db.commit()                       # single commit covers both
+```
+
+### 23. No skipped tests
+`@pytest.mark.skipif(True, ...)` is not coverage.
+Every skipped test must have a GitHub issue reference and a plan to
+re-enable it. Skipped test count should not increase between phases.

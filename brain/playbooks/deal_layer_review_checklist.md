@@ -52,3 +52,12 @@ Before approving any deal layer PR, verify:
 - [ ] Tests check for expired offer rejection (400 error)
 - [ ] Tests check for concurrent accept prevention
 - [ ] Tests verify correct DealEventType on expiration
+## Webhooks & External Integrations (Phase 3+)
+- [ ] Webhook handler has idempotency guard at top (terminal-status check)
+- [ ] Webhook handler validates signature before parsing body
+- [ ] No `try/except: pass` — `logger.exception` at minimum, raise in webhooks
+- [ ] Enum fields from JSON use `EnumClass(value)` conversion
+- [ ] Routes calling external services commit AFTER the service returns
+- [ ] `deals_router` registered in `main.py` DEAL_LAYER_ENABLED block
+- [ ] APScheduler block present in `main.py` DEAL_LAYER_ENABLED block
+- [ ] No new `skipif(True)` tests added
